@@ -94,37 +94,38 @@ async function bootstrap() {
               '/etc/letsencrypt/live/brokencrystals.com/privkey.pem'
             )
           }
-        : null
-  });
-
-  server.setDefaultRoute((req, res) => {
-    if (req.url && req.url.startsWith('/api')) {
-      res.statusCode = 404;
-      return res.end(
-        JSON.stringify({
-          success: false,
-          error: {
-            kind: 'user_input',
-            message: 'Not Found'
-          }
-        })
-      );
-    }
-
-    readFile(
-      join(__dirname, '..', 'client', 'dist', 'index.html'),
-      'utf8',
-      (err, data) => {
-        if (err) {
-          res.statusCode = 500;
-          res.end('Internal Server Error');
-          return;
+        : null,
+    routerOptions: {
+      defaultRoute: (req, res) => {
+        if (req.url && req.url.startsWith('/api')) {
+          res.statusCode = 404;
+          return res.end(
+            JSON.stringify({
+              success: false,
+              error: {
+                kind: 'user_input',
+                message: 'Not Found'
+              }
+            })
+          );
         }
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/html');
-        res.end(data);
+
+        readFile(
+          join(__dirname, '..', 'client', 'dist', 'index.html'),
+          'utf8',
+          (err, data) => {
+            if (err) {
+              res.statusCode = 500;
+              res.end('Internal Server Error');
+              return;
+            }
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/html');
+            res.end(data);
+          }
+        );
       }
-    );
+    }
   });
 
   await server.register(fastifyStatic, {
